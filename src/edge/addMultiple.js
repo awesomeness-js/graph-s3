@@ -145,8 +145,8 @@ async function addMultiple(edges, {
 			key: awsS3Key,
 			body: allIds,
 			metadata: {
-				type: keyMap[awsS3Key].type,
 				v1: keyMap[awsS3Key].v1,
+				type: keyMap[awsS3Key].type,
 				size: allIds.length,
 			}
 		});

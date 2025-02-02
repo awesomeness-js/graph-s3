@@ -7,20 +7,21 @@ import edge_add from './src/edge/add.js';
 import edge_addMultiple from './src/edge/addMultiple.js';
 import edge_addToSuperNode from './src/edge/addToSuperNode.js';
 import edge_convertToSuperNode from './src/edge/convertToSuperNode.js';
+import edge_delete from './src/edge/delete.js';
 import edge_deleteFromSuperNode from './src/edge/deleteFromSuperNode.js';
 import edge_deleteMultiple from './src/edge/deleteMultiple.js';
 import edge_getMultiple from './src/edge/getMultiple.js';
 import edge_search from './src/edge/search.js';
 import kv_add from './src/kv/add.js';
 import kv_addMultiple from './src/kv/addMultiple.js';
+import kv_delete from './src/kv/delete.js';
 import kv_deleteMultiple from './src/kv/deleteMultiple.js';
-import kv_deleteOne from './src/kv/deleteOne.js';
 import kv_get from './src/kv/get.js';
 import kv_getMultiple from './src/kv/getMultiple.js';
 import vertex_add from './src/vertex/add.js';
 import vertex_addMultiple from './src/vertex/addMultiple.js';
+import vertex_delete from './src/vertex/delete.js';
 import vertex_deleteMultiple from './src/vertex/deleteMultiple.js';
-import vertex_deleteOne from './src/vertex/deleteOne.js';
 import vertex_get from './src/vertex/get.js';
 import vertex_getMultiple from './src/vertex/getMultiple.js';
 
@@ -44,6 +45,7 @@ export default {
         addMultiple: edge_addMultiple,
         addToSuperNode: edge_addToSuperNode,
         convertToSuperNode: edge_convertToSuperNode,
+        delete: edge_delete,
         deleteFromSuperNode: edge_deleteFromSuperNode,
         deleteMultiple: edge_deleteMultiple,
         getMultiple: edge_getMultiple,
@@ -52,16 +54,16 @@ export default {
     kv: {
         add: kv_add,
         addMultiple: kv_addMultiple,
+        delete: kv_delete,
         deleteMultiple: kv_deleteMultiple,
-        deleteOne: kv_deleteOne,
         get: kv_get,
         getMultiple: kv_getMultiple
     },
     vertex: {
         add: vertex_add,
         addMultiple: vertex_addMultiple,
+        delete: vertex_delete,
         deleteMultiple: vertex_deleteMultiple,
-        deleteOne: vertex_deleteOne,
         get: vertex_get,
         getMultiple: vertex_getMultiple
     }

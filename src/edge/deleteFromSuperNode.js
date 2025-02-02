@@ -15,16 +15,6 @@ async function deleteFromSuperNode({
 	deleteIds = []
 }){
 
-	// 7777 = 365 kb (works for dynamodb)
-	// 10k = 469 kb (too big for dynamodb)
-	// 25_000 = 1.2 mb
-	// 50_000 = 2.4 mb
-	// 100_000 = 4.7 mb
-	// 250_000 = 11.7 mb
-	// 500_000 = 23.4 mb
-	// 1_000_000 = 46.8 mb
-
-
 	if (!deleteIds.length) return true;
 
 	let {

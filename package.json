@@ -1,6 +1,6 @@
 {
   "name": "@awesomeness-js/graph-s3",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Awesomeness - Graph DB using S3",
   "repository": {
     "type": "git",
