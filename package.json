@@ -1,0 +1,23 @@
+{
+  "name": "@awesomeness-js/graph-s3",
+  "version": "1.0.0",
+  "description": "Awesomeness - graph-s3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awesomeness-js/graph-s3.git"
+  },
+  "type": "module",
+  "main": "index.js",
+  "author": "Scott Forte",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@awesomeness-js/aws-s3": "^1.0.1",
+    "@awesomeness-js/utils": "^1.0.2"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.4"
+  }
+}
