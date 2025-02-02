@@ -1,4 +1,4 @@
-# edges/V1_uuid/type
+# Edge Bucket: edges/V1_uuid/type
 This will be an array of vertex2 uuids
 if the collection gets too large 
 it will be sharded into multiple files
@@ -11,7 +11,7 @@ the array will be sorted in ascending order
 ## metadata of a un-sharded collection (or root file) looks like this
 ```json
 {
-	"V1": "V1_uuid", // the uuid of the vertes 
+	"V1": "V1_uuid", // the uuid of the vertex 
 	"type": "friend", // the edge type
 	"size": 1, // how many uuids are in the entire collection
 }
@@ -29,7 +29,7 @@ will be a simple array of vertex2 uuids
 	"lastId": "vertex2_uuid", // used for routing to the correct shard
 	"size": 1, // how many uuids are in the shard,
 	"type": "friend", // the edge type
-	"lastId": "V1_uuid", // the uuid of the vertes
+	"lastId": "V1_uuid", // the uuid of the vertex
 }
 ```
 
@@ -44,7 +44,7 @@ it is a dictionary of shard ids and the shards metadata
 	"lastId": "vertex2_uuid", // used for routing to the correct shard
 	"size": 1, // how many uuids are in the shard
 	"type": "friend", // the edge type
-	"lastId": "V1_uuid", // the uuid of the vertes
+	"lastId": "V1_uuid", // the uuid of the vertex
   }
 }
 ```
