@@ -1,7 +1,7 @@
 {
   "name": "@awesomeness-js/graph-s3",
   "version": "1.0.0",
-  "description": "Awesomeness - graph-s3",
+  "description": "Awesomeness - Graph DB using S3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/awesomeness-js/graph-s3.git"
@@ -14,8 +14,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@awesomeness-js/aws-s3": "^1.0.1",
-    "@awesomeness-js/utils": "^1.0.2"
+    "@awesomeness-js/aws-s3": "latest",
+    "@awesomeness-js/utils": "latest"
   },
   "devDependencies": {
     "vitest": "^3.0.4"
