@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "declaration": true,        // Generates .d.ts files
+    "emitDeclarationOnly": true, // Only output .d.ts files
+    "allowJs": true,            // Allows JS files
+    "outDir": "types",          // Output directory for type files
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*"],
+  "exclude": []
+}
