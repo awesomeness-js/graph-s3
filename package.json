@@ -1,12 +1,13 @@
 {
   "name": "@awesomeness-js/graph-s3",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Awesomeness - Graph DB using S3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/awesomeness-js/graph-s3.git"
   },
   "type": "module",
+  "types": "./types/index.d.ts",
   "main": "index.js",
   "author": "Scott Forte",
   "license": "MIT",
