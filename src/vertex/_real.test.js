@@ -15,14 +15,14 @@ describe('add', async () => {
     it('should call addMultiple with the correct arguments', async () => {
         
 		const node = { 
-			_id: '00000000-0000-4000-8000-000000000000', 
-			_type: 'test', 
+			id: '00000000-0000-4000-8000-000000000000', 
+			type: 'test', 
 			name: 'Test Node' 
 		};
 
 		const node2 = { 
-			_id: '00000000-0000-4000-8000-000000000001', 
-			_type: 'test', 
+			id: '00000000-0000-4000-8000-000000000001', 
+			type: 'test', 
 			name: 'Test Node' 
 		}
 		
@@ -34,10 +34,10 @@ describe('add', async () => {
     it('should handle errors from addMultiple', async () => {
 
         const node = { 
-			_id: '00000000-0000-4000-8000-000000000000', 
+			id: '00000000-0000-4000-8000-000000000000', 
 			name: 'Test Node' 
 		};
-        await expect(add(node)).rejects.toThrow('Vertex is missing required key: _type');
+        await expect(add(node)).rejects.toThrow('Vertex is missing required key: type');
 
 	});
 
@@ -51,8 +51,8 @@ describe('add', async () => {
 		// console.log({vertices});
 
 		expect(vertices['00000000-0000-4000-8000-000000000000']).toEqual({ 
-			_id: '00000000-0000-4000-8000-000000000000', 
-			_type: 'test', 
+			id: '00000000-0000-4000-8000-000000000000', 
+			type: 'test', 
 			name: 'Test Node' 
 		});
 	});

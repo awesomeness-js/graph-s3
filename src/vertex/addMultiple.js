@@ -5,15 +5,15 @@ async function addMultiple(vertices){
 
 	// make sure edges are formatted correctly
 	const requiredKeys = [
-		{ key: '_id', type: 'uuid4' },
-		{ key: '_type', type: 'string' },
+		{ key: 'id', type: 'uuid4' },
+		{ key: 'type', type: 'string' },
 	];
 
 	let s3Objects = [];
 
 	vertices.forEach(vertex => {
 
-		if(!vertex._id){ vertex._id = uuid(); }
+		if(!vertex.id){ vertex.id = uuid(); }
 
 		// check if required keys are present
 		requiredKeys.forEach(key => {
@@ -36,11 +36,11 @@ async function addMultiple(vertices){
 		// create s3 object
 		s3Objects.push({
 			bucket: process.env.AWESOMENESS_GRAPH_AWS_BUCKET,
-			key: `vertices/${vertex._id}`,
+			key: `vertices/${vertex.id}`,
 			body: vertex,
 			metadata: {
-				id: vertex._id,
-				type: vertex._type,
+				id: vertex.id,
+				type: vertex.type,
 			}
 		});
 		

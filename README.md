@@ -26,22 +26,22 @@ is the same it just takes an array of items
 
 // create a vertex
 const vertex = await graph.vertex.add({
-	_type: 'person',
+	type: 'person',
 	name: 'John Doe',
 	age: 30,
 });
 
-console.log(vertex._id); // will be assigned a uuid4
+console.log(vertex.id); // will be assigned a uuid4
 
 // create another vertex
 const vertex2 = await graph.vertex.add({
-	_id: '00000000-0000-4000-8000-000000000000',
-	_type: 'person',
+	id: '00000000-0000-4000-8000-000000000000',
+	type: 'person',
 	name: 'Jane Doe',
 	age: 25,
 });
 
-console.log(vertex2._id); // will be '00000000-0000-4000-8000-000000000000'
+console.log(vertex2.id); // will be '00000000-0000-4000-8000-000000000000'
 
 ```
 
@@ -236,16 +236,16 @@ await graph.kv.deleteMultiple([
 ### Vertex Body
 
 They should be a JSON object.
-The only reserved properties are `_id` and `_type`,
+The only reserved properties are `id` and `type`,
 all others are fair game.
 
-`_id` is a uuid4
-`_type` is any string
+`id` is a uuid4
+`type` is any string
 
 ```json
 {
-	"_id": "00000000-0000-4000-8000-000000000000",
-	"_type": "person",
+	"id": "00000000-0000-4000-8000-000000000000",
+	"type": "person",
 	"anythingYouWant": "...", 
 }
 ```
