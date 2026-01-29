@@ -297,14 +297,19 @@ When the number of uuids in the collection exceeds 100_000, the collection will 
 
 **un-sharded**
 
-Just a simple array of uuids.
+Just a simple array of edges.
 
 ```json
 [
-	"00000000-0000-4000-8000-000000000001",
-	"00000000-0000-4000-8000-000000000002",
-	"00000000-0000-4000-8000-000000000003",
-	"00000000-0000-4000-8000-000000000004",
+	{ 
+		v1: "00000000-0000-4000-8000-000000000001",
+		v2: "00000000-0000-4000-8000-000000000002",
+		type: "friend"
+		id: "00000000-0000-4000-8000-000000000003"
+		properties: {
+			"someProperty": "someValue"
+		} 
+	}
 ]
 ```
 
@@ -318,17 +323,15 @@ A dictionary with the metadata of all shards.
 	"v1": "00000000-0000-4000-8000-000000000000", // the uuid of the vertex
 	"type": "friend", // the edge type
 	"size": 4, // how many uuids are in the shard,
-
 	"id": "shard.1", // the id of the shard
-	"lastId": "00000000-0000-4000-8000-000000000004", // used for routing to the correct shard
+	"lastV2Id": "00000000-0000-4000-8000-000000000004", // used for routing to the correct shard
   },
   "shard.2": {
 	"v1": "00000000-0000-4000-8000-000000000000", // the uuid of the vertex
 	"type": "friend", // the edge type
 	"size": 4, // how many uuids are in the shard,
-
 	"id": "shard.2", // the id of the shard
-	"lastId": "00000000-0000-4000-8000-000000000008", // used for routing to the correct shard
+	"lastV2Id": "00000000-0000-4000-8000-000000000008", // used for routing to the correct shard
   }
 }
 ```
@@ -336,28 +339,16 @@ A dictionary with the metadata of all shards.
 ### Edge Metadata 
 `your-bucket/edges/00000000-0000-4000-8000-000000000000/friend`
 
-**un-sharded**
+**sharded or un-sharded**
 ```json
 {
 	"v1": "00000000-0000-4000-8000-000000000005",
 	"type": "someEdgeType",
 	"size": 4,
-}
-```
-
-**sharded**
-```json
-{
-	"v1": "00000000-0000-4000-8000-000000000005",
-	"type": "someEdgeType",
-	"size": 8,
-	
-	// 2 additional properties
 	"id": "edges/00000000-0000-4000-8000-000000000000/friend",
-	"supernode": true,
+	"supernode": true, // or false
 }
 ```
-
 
 #### Shard Body
 
@@ -367,10 +358,15 @@ Same as an un-sharded edge collection body.
 
 ```json
 [
-	"00000000-0000-4000-8000-000000000001",
-	"00000000-0000-4000-8000-000000000002",
-	"00000000-0000-4000-8000-000000000003",
-	"00000000-0000-4000-8000-000000000004",
+	{ 
+		v1: "00000000-0000-4000-8000-000000000001",
+		v2: "00000000-0000-4000-8000-000000000002",
+		type: "friend"
+		id: "00000000-0000-4000-8000-000000000003"
+		properties: {
+			"someProperty": "someValue"
+		} 
+	}
 ]
 ```
 
@@ -378,21 +374,26 @@ Same as an un-sharded edge collection body.
 
 ```json
 [
-	"00000000-0000-4000-8000-000000000005",
-	"00000000-0000-4000-8000-000000000006",
-	"00000000-0000-4000-8000-000000000007",
-	"00000000-0000-4000-8000-000000000008",
+	{ 
+		v1: "00000000-0000-4000-8000-000000000001",
+		v2: "00000000-0000-4000-8000-000000000002",
+		type: "friend"
+		id: "00000000-0000-4000-8000-000000000003"
+		properties: {
+			"someProperty": "someValue"
+		} 
+	}
 ]
 ```
 
 #### shard metadata
 
 Shard metadata is the same as edge metadata,
-but with the addition of the `id` and `lastId` properties.
+but with the addition of the `id` and `lastV2Id` properties.
 
 `id` is the id of the shard.
 
-`lastId` is the last uuid in the shard. 
+`lastV2Id` is the last uuid in the shard. 
 This is used for quickly routing to the correct shard.
 
 `your-bucket/edges/00000000-0000-4000-8000-000000000000/friend/shard.1`
@@ -403,8 +404,8 @@ This is used for quickly routing to the correct shard.
 	"size": 4,
 
 	// special shard properties
-	"id": "shard.1",
-	"lastId": "00000000-0000-4000-8000-000000000004",
+	"id": "edges/00000000-0000-4000-8000-000000000000/friend/shard.1",
+	"lastV2Id": "00000000-0000-4000-8000-000000000004",
 }
 ```
 
@@ -417,8 +418,8 @@ This is used for quickly routing to the correct shard.
 	"size": 4,
 
 	// special shard properties
-	"id": "shard.2",
-	"lastId": "00000000-0000-4000-8000-000000000008",
+	"id": "edges/00000000-0000-4000-8000-000000000000/friend/shard.2",
+	"lastV2Id": "00000000-0000-4000-8000-000000000008",
 }
 ```
 

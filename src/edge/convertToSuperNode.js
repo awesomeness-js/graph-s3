@@ -5,13 +5,13 @@ import s3 from "@awesomeness-js/aws-s3";
 async function convertToSuperNode({ 
 	key,
 	bucket,
-	allIds,
+	allEdges,
 	type,
 	v1,
 	maxSize = 100_000
 }){
 
-	if (!allIds.length) { 
+	if (!allEdges.length) { 
 		
 		console.warn('no ids to convert to super node');
 
@@ -25,36 +25,36 @@ async function convertToSuperNode({
 		id: key,
 		type,
 		v1,
-		size: allIds.length,
+		size: allEdges.length,
 		supernode: true // aws converts to lowercase....
 	};
 
 
 	// sort
-	allIds.sort((a, b) => { 
-		return a > b ? 1 : -1; 
+	allEdges.sort((a, b) => { 
+		return a.v2 > b.v2 ? 1 : -1; 
 	});
 	
 	const shardKeysSorted = [];
 
 	// how many buckets do we need?
-	const bucketsNeeded = Math.ceil(allIds.length / maxSize);
+	const bucketsNeeded = Math.ceil(allEdges.length / maxSize);
 
 	// Determine the ideal size for each bucket for even distribution
-	const idealSize = Math.ceil(allIds.length / bucketsNeeded);
+	const idealSize = Math.ceil(allEdges.length / bucketsNeeded);
 
 	// chuck it up
 	for(let i = 0; i < bucketsNeeded; i++){
 
 		const start = i * idealSize;
 		const end = start + idealSize;
-		const thisChunk = allIds.slice(start, end);
+		const thisChunk = allEdges.slice(start, end);
 
-		const shardId = `shard.${i}`;
+		const shardId = `edges/00000000-0000-4000-8000-000000000000/friend/shard.${i}`;
 
 		const thisMetadata = {
 			size: thisChunk.length,
-			lastId: thisChunk[thisChunk.length - 1],
+			lastV2Id: thisChunk[thisChunk.length - 1].v2,
 			id: shardId,
 			v1,
 			type
@@ -76,20 +76,20 @@ async function convertToSuperNode({
 
 	// sort the keys
 	shardKeysSorted.sort((a, b) => {
-		return a > b ? 1 : -1;
+		return a.v2 > b.v2 ? 1 : -1;
 	});
 
 	const lastKey = shardKeysSorted[shardKeysSorted.length - 1];
 
-	function findAHomeForThisId(id){
+	function findAHomeForThis(id){
 
 		let house = shardKeysSorted[0];
 
 		each(shardKeysSorted, (shardID) => {
 
-			let { lastId } = rootDocBody[shardID];
+			let { lastV2Id } = rootDocBody[shardID];
 
-			if(id < lastId){ house = shardID; return false; }
+			if(id < lastV2Id){ house = shardID; return false; }
 			if(shardID === lastKey) { house = shardID; }
 
 		});
@@ -101,10 +101,18 @@ async function convertToSuperNode({
 
 	const shardMap__id_items = {};
 
-	allIds.forEach(id => {
-		let house = findAHomeForThisId(id);
+	let edgeKVsToCreate = {};
+
+	allEdges.forEach(edge => {
+		let house = findAHomeForThis(edge.v2);
 		if(!shardMap__id_items[house]) shardMap__id_items[house] = [];
-		shardMap__id_items[house].push(id);
+		shardMap__id_items[house].push(edge);
+
+		edgeKVsToCreate[`edge::${edge.id}`] = {
+			... edge,
+			edgeLocation: `${key}/${house}`,
+		};
+
 	});
 
 	
@@ -126,6 +134,21 @@ async function convertToSuperNode({
 
 		console.log('error', e);
 		return false;
+
+	}
+	
+
+	try {
+
+		if(Object.keys(edgeKVsToCreate).length){
+		
+			await addMultipleKVs(edgeKVsToCreate);
+		
+		}
+
+	} catch(err){
+
+		console.log(err);
 
 	}
 

@@ -11,11 +11,11 @@ async function addToSuperNode({
 		bytes,
 		modified
 	},
-	addIds = [],
+	addEdges = [],
 	maxSize = 100_000
 }){
 
-	if (!addIds.length) return true;
+	if (!addEdges.length) return true;
 
 	let {
 		key, 
@@ -30,14 +30,14 @@ async function addToSuperNode({
 	let shardMap = body;
 	/*
 	{
-		'shard.1': {
-			id: 'shard.1',
-			lastId: '00000000-0000-4000-8000-000000000010',
+		'edges/00000000-0000-4000-8000-000000000000/friend/shard.1': {
+			id: 'edges/00000000-0000-4000-8000-000000000000/friend/shard.1',
+			lastV2Id: '00000000-0000-4000-8000-000000000010',
 			size: 10
 		},
-		'shard.2': {
-			id: 'shard.2',
-			lastId: '00000000-0000-4000-8000-000000000020',
+		'edges/00000000-0000-4000-8000-000000000000/friend/shard.2': {
+			id: 'edges/00000000-0000-4000-8000-000000000000/friend/shard.2',
+			lastV2Id: '00000000-0000-4000-8000-000000000020',
 			size: 10
 		}
 	*/
@@ -49,15 +49,15 @@ async function addToSuperNode({
 
 	const shardMap__id_items = {};
 
-	function findAHomeForThisId(id){
+	function findAHomeForThis(id){
 
 		let house = shardKeysSorted[0];
 
 		each(shardKeysSorted, (shardID) => {
 
-			let { lastId } = shardMap[shardID];
+			let { lastV2Id } = shardMap[shardID];
 
-			if(id < lastId){ house = shardID; return false; }
+			if(id < lastV2Id){ house = shardID; return false; }
 			if(shardID === lastKey) { house = shardID; }
 
 		});
@@ -66,10 +66,10 @@ async function addToSuperNode({
 
 	}
 
-	addIds.forEach(id => {
-		let house = findAHomeForThisId(id);
+	addEdges.forEach(edge => {
+		let house = findAHomeForThis(edge.v2);
 		if(!shardMap__id_items[house]) shardMap__id_items[house] = [];
-		shardMap__id_items[house].push(id);
+		shardMap__id_items[house].push(edge);
 	});
 
 	// fetch the shards
@@ -87,10 +87,13 @@ async function addToSuperNode({
 	let allNeededShards = await s3.get.multiple(objectsToFetch);
 	let updatedShards = [];
 	let deleteShards = [];
-	
+
+	let edgeKVsToCreate = {};
+	const uniqueIds = new Set();
+
 	each(allNeededShards, (shard, i) => {
 
-		let shardId = shard.key.split('/').pop();
+		let shardId = shard.key;
 
 		// this is only needed for testing
 		// it will always exist in the real world
@@ -98,23 +101,40 @@ async function addToSuperNode({
 			shard.body = [];
 			shard.metadata = {
 				size: 0,
-				lastId: null,
+				lastV2Id: null,
 				id: shardId,
 				v1: metadata.v1,
 				type: metadata.type
 			};
 		}
 
-		let existingIds = shard.body;
+		let existingEdges = shard.body;
 
-		let newShard = [...existingIds, ...shardMap__id_items[shardId]];
+		let newShard = [...existingEdges, ...shardMap__id_items[shardId]];
 
 		// make unique
-		newShard = [...new Set(newShard)];
+		each(newShard, (edge) => {
+
+			if(!edge.id || !isUUID(edge.id)){
+				throw new Error(`edge id invalid: ${edge.id}`);
+			}
+
+			if(uniqueIds.has(edge.id)){
+				throw new Error(`duplicate edge id found: ${edge.id}`);
+			}
+
+			uniqueIds.add(edge.id);
+
+			edgeKVsToCreate[`edge::${edge.id}`] = {
+				... edge,
+				edgeLocation: awsS3Key,
+			};
+
+		});
 
 		// sort the new shard
 		newShard.sort((a, b) => {
-			return a > b ? 1 : -1;
+			return a.v2 > b.v2 ? 1 : -1;
 		});
 
 		shard.metadata.size = newShard.length;
@@ -127,7 +147,7 @@ async function addToSuperNode({
 				bucket,
 				metadata: {
 					size: newShard.length,
-					lastId: newShard[newShard.length - 1],
+					lastV2Id: newShard[newShard.length - 1].v2,
 					id: shardId,
 					v1: metadata.v1,
 					type: metadata.type
@@ -163,7 +183,7 @@ async function addToSuperNode({
 
 				const thisMetadata = {
 					size: thisChunk.length,
-					lastId: thisChunk[thisChunk.length - 1],
+					lastV2Id: thisChunk[thisChunk.length - 1].v2,
 					id: shardId,
 					v1: metadata.v1,
 					type: metadata.type						
@@ -177,7 +197,26 @@ async function addToSuperNode({
 				});
 
 				// update main metadata
-				shardMap[`${shardId}.${i}`] = thisMetadata;
+				shardMap[`${key}/${shardId}.${i}`] = thisMetadata;
+
+				thisChunk.forEach(edge => {
+
+					if(!edge.id || !isUUID(edge.id)){
+						throw new Error(`edge id invalid: ${edge.id}`);
+					}
+
+					if(uniqueIds.has(edge.id)){
+						throw new Error(`duplicate edge id found: ${edge.id}`);
+					}
+
+					uniqueIds.add(edge.id);
+
+					edgeKVsToCreate[`edge::${edge.id}`] = {
+						... edge,
+						edgeLocation: `${key}/${shardId}.${i}`
+					};
+
+				});
 
 			}
 
@@ -217,6 +256,21 @@ async function addToSuperNode({
 
 		console.log('error', e);
 		return false;
+
+	}
+
+
+	try {
+
+		if(Object.keys(edgeKVsToCreate).length){
+		
+			await addMultipleKVs(edgeKVsToCreate);
+		
+		}
+
+	} catch(err){
+
+		console.log(err);
 
 	}
 

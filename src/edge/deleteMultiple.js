@@ -1,162 +1,107 @@
 
 import { each, isUUID } from "@awesomeness-js/utils";
 import s3 from "@awesomeness-js/aws-s3";
-import deleteFromSuperNode from "./deleteFromSuperNode.js";
+import getKVs from "../kv/getMultiple.js";
 
-async function deleteMultiple(edges, {
-	bucket = process.env.AWESOMENESS_GRAPH_AWS_BUCKET
+async function deleteMultiple(edgeIDs, {
+	bucket = process.env.AWESOMENESS_GRAPH_AWS_BUCKET,
+	edgeLocations = [],
 } = {}){
 
-	if(!edges || !Array.isArray(edges) || !edges.length){
-		throw new Error('edges invalid');
+    // Validate edgeIDs is an array
+    if (!Array.isArray(edgeIDs)) {
+        throw {
+            dbError: {
+                msg: 'edge ids invalid - must be array of UUIDs',
+                edgeIDs
+            }
+        };
+    }
+
+    // Validate each edgeID in the array
+    edgeIDs.forEach((id, i) => {
+        if (!isUUID(id)) {
+            throw {
+                dbError: {
+                    msg: `edge id invalid - must be a UUID (error at index ${i})`,
+                    edgeIDs,
+                    key: i,
+                    value: id
+                }
+            };
+        }
+    });
+
+
+	if(!edgeLocations){
+
+		edgeLocations = [];
+
+		const keys = edgeIDs.map(id => `edge::${id}`);
+		let kvs = await getKVs(keys);
+
+		if(!kvs || !Object.keys(kvs).length){
+			return {
+				edgesDeleted: 0,
+			}
+		}
+
+		edgeLocations = Object.values(kvs).map(edge => edge.edgeLocation);
+
 	}
 
-	let map_new__v1_type__v2s_toDelete = {};
-
-	let keyMap = {};
-
-	edges.forEach(edge => {
-
-		let v1 = edge[0];
-		let type = edge[1];
-		let v2 = edge[2];
-
-		if(!v1 || !isUUID(v1)){
-			throw new Error(`v1 invalid: ${v1}`);
-		}
-
-		if(!type || typeof type !== 'string' || type.length < 1 || type.length > 420){
-			throw new Error(`type invalid: ${type}`);
-		}
-
-		if(!v2 || !isUUID(v2)){
-			throw new Error(`v2 invalid: ${v2}`);
-		}
-
-		let key = `edges/${v1}/${type}`;
-		
-		if(!map_new__v1_type__v2s_toDelete[key]){ 
-
-			map_new__v1_type__v2s_toDelete[key] = []; 
-
-			keyMap[key] = {
-				type,
-				v1
-			};
-
-		}
-
-		map_new__v1_type__v2s_toDelete[key].push(v2);
-		
-	});
-
-
-	let s3ObjectsExisting = [];
-	each(keyMap, ( _, key ) => {
-		s3ObjectsExisting.push({
-			bucket,
-			key,
-		});
-	});
-
-
-	const existingEdgeS3Objects = await s3.get.multiple(s3ObjectsExisting);
-
-
-	const edgesToUpdate = {};
-	const superNodePromises = [];
-
-	existingEdgeS3Objects.forEach(edge => {
-
-		let isSuperNode = edge?.metadata?.supernode ? true : false;
-
-		if(isSuperNode){
-
-			superNodePromises.push(deleteFromSuperNode({
-				edge,
-				deleteIds: map_new__v1_type__v2s_toDelete[edge.key]
-			}));
-
-			return;
-
-		}
-
-		// n1 + edge type never existed
-		if(edge.body === null){ 
-			return;
-		}
-
-		try {
-
-			// normal edge collection, not super node
-			edgesToUpdate[edge.key] = edge.body;
-		
-		} catch (error) {
-
-			throw({
-				message: 'edge data corrupt',
-				edge,
-			});
+	// fetch the edgeCollections
+	let objectsToFetch = [];
+	each(edgeLocations, (key) => {
 	
-		}
-
-		
-	});
-
-
-	// do super node things
-	if(superNodePromises.length){
-		await Promise.all(superNodePromises);
-	}
-
-
-
-	const edgesToUpdate_setups = [];
-	each(edgesToUpdate, (existing_v2s, awsS3Key) => {
-
-		let allIds = existing_v2s.filter(v2 => {
-			return !map_new__v1_type__v2s_toDelete[awsS3Key].includes(v2);
+		objectsToFetch.push({
+			key,
+			bucket
 		});
 
-		// make unique
-		allIds = [...new Set(allIds)];
+	});
+	
+	let edgeCollections = await s3.get.multiple(objectsToFetch);
+	
+	const updatedCollections = [];
 
-		let size = allIds.length;
+	let totalReduction = 0;
 
-		// create s3 object
-		edgesToUpdate_setups.push({
+	each(edgeCollections, (edgeCollection, i) => {
+		// this is only needed for testing
+		// it will always exist in the real world
+		if(edgeCollection.body === null){
+			throw new Error(`edgeCollection.body is null: ${edgeCollection.key} someone fucked up.`);
+		}
+
+		let existingEdges = edgeCollection.body;
+
+		let updatedCollection = existingEdges.filter(edge => {
+			return !edgeIDs.includes(edge.id);
+		});
+
+		const sizeBefore = existingEdges.length;
+		const sizeAfter = updatedCollection.length;
+
+		const reduction = sizeBefore - sizeAfter;
+
+		updatedCollections.push({
+			key: edgeCollection.key,
+			body: updatedCollection,
 			bucket,
-			key: awsS3Key,
-			body: allIds,
 			metadata: {
-				type: keyMap[awsS3Key].type,
-				v1: keyMap[awsS3Key].v1,
-				size: allIds.length,
+				size: updatedCollection.length,
+				lastV2Id: updatedCollection[updatedCollection.length - 1].v2,
+				id: edgeCollection.key,
+				v1: metadata.v1,
+				type: metadata.type
 			}
 		});
 
-		
+		// update main metadata
+		totalReduction += reduction;
+
 	});
-
-
-	try {
-
-		if(edgesToUpdate_setups.length){
-
-			let allPromises = [];
-			edgesToUpdate_setups.forEach(setup => {
-				allPromises.push(s3.put.multiple([setup]));
-			});
-
-			await Promise.all(allPromises);
-		}
-
-	} catch(err){
-
-		console.log(err);
-		
-	}
-
 
 	return true;
 

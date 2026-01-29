@@ -1,6 +1,6 @@
 {
   "name": "@awesomeness-js/graph-s3",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Awesomeness - Graph DB using S3",
   "repository": {
     "type": "git",
@@ -15,10 +15,10 @@
     "access": "public"
   },
   "scripts": {
-      "prebuild": "node ./build/build.js",
-      "build": "tsc && npm run postBuild",
-      "postBuild": "node ./build/postBuild.js"
-  }, 
+    "prebuild": "node ./build/build.js",
+    "build": "tsc && npm run postBuild",
+    "postBuild": "node ./build/postBuild.js"
+  },
   "dependencies": {
     "@awesomeness-js/aws-s3": "latest",
     "@awesomeness-js/utils": "latest"

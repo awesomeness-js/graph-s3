@@ -1,24 +1,13 @@
 
 import getMultiple from "./getMultiple.js";
 
-async function search(v1s, types, {
+async function search(
+    v1s = null, 
+    edgeTypes = null, 
+    v2s = null,
+    returnProperties = false
+){
 
-} = {}){
-
-	if (!Array.isArray(v1s)){ v1s = [v1s]; }
-	if (!Array.isArray(types)){ types = [types]; }
-
-	const searchRows = [];
-
-	v1s.forEach(v1 => {
-		types.forEach(type => {
-			searchRows.push([v1, type]);
-		});
-	});
-
-	let edges = await getMultiple(searchRows);
-
-	return edges;
 
 }
 
