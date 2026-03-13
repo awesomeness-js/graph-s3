@@ -29,7 +29,7 @@ async function deleteMultipleVertices(ids){
 
 	});
 
-	await s3.delete.multiple(s3Objects);
+	await s3.remove.multiple(s3Objects);
 
 	return true;
 

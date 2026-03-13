@@ -1,8 +1,8 @@
 export default convertToSuperNode;
-declare function convertToSuperNode({ key, bucket, allIds, type, v1, maxSize }: {
+declare function convertToSuperNode({ key, bucket, allEdges, type, v1, maxSize }: {
     key: any;
     bucket: any;
-    allIds: any;
+    allEdges: any;
     type: any;
     v1: any;
     maxSize?: number;
@@ -13,7 +13,7 @@ declare function convertToSuperNode({ key, bucket, allIds, type, v1, maxSize }: 
         bucket: any;
         metadata: {
             size: any;
-            lastId: any;
+            lastV2Id: any;
             id: string;
             v1: any;
             type: any;

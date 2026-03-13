@@ -1,1 +1,1 @@
-export default function getMultipleEdges(data: any): Promise<any[]>;
+export default function getMultipleEdges(edgeIDs: any): Promise<{}>;

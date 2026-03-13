@@ -1,5 +1,5 @@
 export default addToSuperNode;
-declare function addToSuperNode({ edge, addIds, maxSize }: {
+declare function addToSuperNode({ edge, addEdges, maxSize }: {
     edge?: {
         key: any;
         body: any;
@@ -8,7 +8,7 @@ declare function addToSuperNode({ edge, addIds, maxSize }: {
         bytes: any;
         modified: any;
     };
-    addIds?: any[];
+    addEdges?: any[];
     maxSize?: number;
 }): Promise<boolean | {
     updatedShards: {

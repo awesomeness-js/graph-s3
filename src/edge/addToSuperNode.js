@@ -249,7 +249,7 @@ async function addToSuperNode({
 
 		// delete the old shards
 		if(deleteShards.length){
-			await s3.delete.multiple(deleteShards);
+			await s3.remove.multiple(deleteShards);
 		}
 	
 	} catch (e){

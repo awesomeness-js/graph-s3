@@ -1,4 +1,7 @@
 export default deleteMultiple;
-declare function deleteMultiple(edges: any, { bucket }?: {
+declare function deleteMultiple(edgeIDs: any, { bucket, edgeLocations, }?: {
     bucket?: any;
-}): Promise<boolean>;
+    edgeLocations?: any[];
+}): Promise<true | {
+    edgesDeleted: number;
+}>;
